@@ -1,6 +1,7 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
-def calculate_bmi(height: float, weight: float) -> dict:
+def calculate_bmi(height, weight, timezone='Europe/Zurich'):
     """
     Calculate BMI and return a dictionary with inputs, BMI, category, and timestamp.
 
@@ -15,7 +16,8 @@ def calculate_bmi(height: float, weight: float) -> dict:
         raise ValueError("Height and weight must be positive values.")
 
     bmi = weight / (height ** 2)
-    timestamp = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+    
+    timestamp = datetime.now(tz=ZoneInfo(timezone)).strftime("%d.%m.%Y %H:%M:%S")
 
     if bmi < 18.5:
         category = 'Untergewicht'

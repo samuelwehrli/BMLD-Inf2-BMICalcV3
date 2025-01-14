@@ -21,4 +21,4 @@ bmi_df = bmi_df.sort_values('timestamp')
 
 # Display table
 st.subheader('BMI Verlauf')
-st.dataframe(bmi_df.sort_values('timestamp', ascending=False))
+st.dataframe(bmi_df)
