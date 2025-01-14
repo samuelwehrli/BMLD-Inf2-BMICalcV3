@@ -14,5 +14,3 @@ Die Anwendung ermöglicht es Ihnen, Ihren BMI zu berechnen und im Zeitverlauf zu
         
 # Add some health advice
 st.info('Der BMI ist ein Screening-Tool, aber keine Diagnose für Körperfett oder Gesundheit. Bitte konsultieren Sie einen Arzt für eine vollständige Beurteilung.')
-
-        

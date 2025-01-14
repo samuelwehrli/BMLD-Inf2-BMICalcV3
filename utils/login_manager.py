@@ -64,7 +64,11 @@ class LoginManager:
             st.warning("Please enter your username and password")
 
     def _show_register(self):
-        res = self.authenticator.register_user(pre_authorization=False)
+        st.info("""
+        The password must be 8-20 characters long and include at least one uppercase letter, 
+        one lowercase letter, one digit, and one special character from @$!%*?&.
+        """)
+        res = self.authenticator.register_user()
         if res[1] is not None:
             st.success(f"User {res[1]} registered successfully")
             if self._save_credentials():
@@ -76,7 +80,12 @@ class LoginManager:
         """
         Update the credentials DataFrame with the newly registered user.
         """
-        credentials = self.authenticator.authentication_handler.credentials
+        credentials = (  # this might change upon upgrade. Needs to be checked on github
+            self.authenticator.  
+            authentication_controller.
+            authentication_model.
+            credentials
+        )
         credentials_df = (
             pd.DataFrame.from_dict(credentials["usernames"], orient="index")
             .reset_index()
