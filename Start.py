@@ -1,8 +1,5 @@
 import streamlit as st
-import pandas as pd
 from utils.app_manager import AppManager
-from functions.bmi_calculator import calculate_bmi
-from functions.bmi_data_manager import update_bmi_data
 
 app_manager = AppManager(storage_type='switchdrive', login_py_file='Start.py')
 app_manager.login_page(show_register_tab=True)
