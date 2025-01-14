@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 import streamlit_authenticator as stauth
-from functions.cloud_file import CloudFile
+from utils.cloud_file import CloudFile
 
 class LoginManager:
     def __init__(self, 

@@ -1,8 +1,8 @@
 import secrets
 import streamlit as st
-from functions.switchdrive import SwitchDrive
-from functions.cloud_file import CloudFile
-from functions.login_manager import LoginManager
+from utils.switchdrive import SwitchDrive
+from utils.cloud_file import CloudFile
+from utils.login_manager import LoginManager
 
 class AppManager:
     """A class to manage application state, storage, and authentication."""
@@ -12,7 +12,7 @@ class AppManager:
         
         Args:
             **app_manager_config: Arbitrary keyword arguments for configuration.
-                Must include 'storage_type' if no existing configuration exists.
+                Must include 'storage_type' and 'login_py_file' if no existing configuration exists.
         
         Raises:
             ValueError: If no configuration is provided and none exists in session state.
@@ -50,18 +50,23 @@ class AppManager:
 
     def _init_app_manager_data(self, 
                                storage_type: str, 
+                               login_py_file = None,
                                credentials_file_name = 'credentials.csv',
                                cookie_name = 'bmld_inf2_streamlit_app'):
         """Initialize the application manager data with specified storage type.
         
         Args:
             storage_type (str): Type of storage to use (e.g. 'switchdrive')
+            login_py_file (str, optional): Path to the login page Python file. Required for authentication.
+            credentials_file_name (str, optional): Name of the credentials file. Defaults to 'credentials.csv'.
+            cookie_name (str, optional): Name of the authentication cookie. Defaults to 'bmld_inf2_streamlit_app'.
             
         Raises:
             ValueError: If storage_type is not supported.
         """
         app_manager_data = {
             'storage_type': storage_type,
+            'login_py_file': login_py_file,
         }
 
         if storage_type == 'switchdrive':
@@ -95,23 +100,33 @@ class AppManager:
         """Save the current app manager data to session state."""
         st.session_state['app_manager'] = self.app_manager_data
 
-    def check_login(self, login_page_py_file):
+    def check_login(self):
         """Check login status and handle authentication flow.
         
         Creates a logout button that logs the user out and redirects to the login page.
-        If the user is not logged in, the login page is displayed.
+        If the user is not logged in, redirects to the login page specified during initialization.
 
-        Args:
-            login_page_py_file (str): The path to the Python file containing the login page
+        Raises:
+            ValueError: If no login page was specified during initialization.
         """
+        app_manager_data = self._get_app_manager_data()
+        login_py_file = app_manager_data.get('login_py_file', None)
+        if login_py_file is None:
+            raise ValueError("AppManager: No login page specified, please use parameter 'login_py_file' when initializing AppManager")
+
         if st.session_state.get("authentication_status") is not True:
-            st.switch_page(login_page_py_file)
+            st.switch_page(login_py_file)
         else:
             app_manager_data = self._get_app_manager_data()
             login_manager = app_manager_data['login_manager']
             login_manager.logout() # create logout button
 
     def get_current_user(self):
+        """Get the currently logged in username.
+        
+        Returns:
+            str: The current username, or None if no user is logged in.
+        """
         return st.session_state.get('username', None)
 
     def get_user_data_file(self, file_name):
@@ -144,6 +159,9 @@ class AppManager:
             
         Returns:
             CloudFile: A CloudFile instance for the specified app data file
+            
+        Raises:
+            RuntimeError: If app manager is not properly initialized
         """
         app_manager_data = self._get_app_manager_data()
         app_drive = app_manager_data['app_drive']
@@ -157,6 +175,9 @@ class AppManager:
         Args:
             show_register_tab (bool): Whether to show the registration tab.
                 Defaults to True.
+                
+        Raises:
+            RuntimeError: If login manager is not properly initialized
         """
         app_manager_data = self._get_app_manager_data()
         login_manager = app_manager_data['login_manager']
