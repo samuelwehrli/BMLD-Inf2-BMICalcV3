@@ -17,7 +17,7 @@ if bmi_df.empty:
 
 # Sort dataframe by timestamp
 bmi_df['timestamp'] = pd.to_datetime(bmi_df['timestamp'], format='%d.%m.%Y %H:%M:%S')
-bmi_df = bmi_df.sort_values('timestamp')
+bmi_df = bmi_df.sort_values('timestamp', ascending=False)
 
 # Display table
 st.subheader('BMI Verlauf')
