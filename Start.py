@@ -5,7 +5,7 @@ from functions.bmi_calculator import calculate_bmi
 from functions.bmi_data_manager import update_bmi_data
 
 app_manager = AppManager(storage_type='switchdrive', login_py_file='Start.py')
-app_manager.login_page(show_register_tab=False)
+app_manager.login_page(show_register_tab=True)
 
 st.title('BMI Rechner')
 
