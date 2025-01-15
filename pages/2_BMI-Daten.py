@@ -4,10 +4,10 @@ from utils.app_manager import AppManager
 from functions.bmi_data_manager import load_bmi_df
 
 app_manager = AppManager()
-app_manager.check_login()
+app_manager.login_page()
 
-bmi_file = app_manager.get_user_data_file('bmi.csv')
-bmi_df = load_bmi_df(bmi_file)
+data_handler = app_manager.get_user_data_handler()
+bmi_df = data_handler.load('bmi.csv', initial_value=pd.DataFrame())
 
 st.title('BMI Werte')
 
@@ -20,5 +20,4 @@ bmi_df['timestamp'] = pd.to_datetime(bmi_df['timestamp'], format='%d.%m.%Y %H:%M
 bmi_df = bmi_df.sort_values('timestamp', ascending=False)
 
 # Display table
-st.subheader('BMI Verlauf')
 st.dataframe(bmi_df)

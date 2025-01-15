@@ -5,9 +5,8 @@ from functions.bmi_calculator import calculate_bmi
 from functions.bmi_data_manager import update_bmi_data
 
 app_manager = AppManager()
-app_manager.check_login()
-
-bmi_file = app_manager.get_user_data_file('bmi.csv')
+app_manager.login_page()
+data_handler = app_manager.get_user_data_handler
 
 st.title('BMI Rechner')
 
@@ -24,11 +23,6 @@ if st.button('BMI berechnen'):
     st.write(f'Berechnet am: {result["timestamp"]}')
     st.write(f'Kategorie: {result["category"]}')
         
-    # Add some health advice
-    st.info('Der BMI ist ein Screening-Tool, aber keine Diagnose für Körperfett oder Gesundheit. Bitte konsultieren Sie einen Arzt für eine vollständige Beurteilung.')
-
-    if update_bmi_data(bmi_file, result):
-        st.success('BMI Daten wurden erfolgreich gespeichert.')
-    else:
-        st.error('Fehler beim Speichern der BMI Daten.')
+    # Save BMI data
+    update_bmi_data(result)
         

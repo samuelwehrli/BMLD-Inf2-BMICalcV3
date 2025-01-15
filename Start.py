@@ -1,7 +1,7 @@
 import streamlit as st
 from utils.app_manager import AppManager
 
-app_manager = AppManager(storage_type='switchdrive', login_py_file='Start.py')
+app_manager = AppManager(fs_protocol='webdav', fs_root_folder="App/BMLD-Inf2-BMICalcV3")
 app_manager.login_page(show_register_tab=True)
 
 st.title('BMI Rechner')

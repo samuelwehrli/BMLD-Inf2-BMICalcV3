@@ -1,4 +1,5 @@
 import pandas as pd
+from utils.app_manager import AppManager
 
 def load_bmi_df(bmi_file):
     """
@@ -16,7 +17,7 @@ def load_bmi_df(bmi_file):
         bmi_df = pd.DataFrame()  # create empty dataframe if file does not exist
     return bmi_df
 
-def update_bmi_data(bmi_file, bmi_result):
+def update_bmi_data(bmi_result, bmi_file = 'bmi.csv'):
     """
     Update BMI data file with new result.
 
@@ -32,10 +33,11 @@ def update_bmi_data(bmi_file, bmi_result):
     Returns:
         bool: True if save was successful, False otherwise
     """
-    bmi_df = load_bmi_df(bmi_file)
+    data_handler = AppManager().get_user_data_handler()
+    bmi_df = data_handler.load('bmi.csv', initial_value=pd.DataFrame())
 
     # Append new result to dataframe 
     bmi_df = pd.concat([bmi_df, pd.DataFrame([bmi_result])], ignore_index=True)
     
     # Save updated dataframe
-    return bmi_file.save(bmi_df)
+    data_handler.save(bmi_file, bmi_df)

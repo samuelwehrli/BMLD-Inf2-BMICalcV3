@@ -1,185 +1,203 @@
-import secrets
+import secrets, fsspec, posixpath
 import streamlit as st
-from utils.switchdrive import SwitchDrive
-from utils.cloud_file import CloudFile
-from utils.login_manager import LoginManager
+import streamlit_authenticator as stauth
+from utils.data_handler import DataHandler
+
 
 class AppManager:
-    """A class to manage application state, storage, and authentication."""
+    """
+    Singleton class that manages application state, storage, and user authentication.
     
-    def __init__(self, **app_manager_config):
-        """Initialize the AppManager with configuration.
-        
-        Args:
-            **app_manager_config: Arbitrary keyword arguments for configuration.
-                Must include 'storage_type' and 'login_py_file' if no existing configuration exists.
-        
-        Raises:
-            ValueError: If no configuration is provided and none exists in session state.
+    Handles filesystem access, user credentials, and authentication state using Streamlit's
+    session state for persistence across reruns. Provides interfaces for accessing user-specific
+    and application-wide data storage.
+    """
+    def __new__(cls, *args, **kwargs):
         """
-        if self._get_app_manager_data() is not None:
+        Implements singleton pattern by returning existing instance from session state if available.
+
+        Returns:
+            AppManager: The singleton instance, either existing or newly created
+        """
+        if 'app_manager' in st.session_state:
+            return st.session_state.app_manager
+        else:
+            instance = super(AppManager, cls).__new__(cls)
+            st.session_state.app_manager = instance
+            return instance
+    
+    def __init__(self, fs_protocol: str = None, 
+                 fs_root_folder: str = None,
+                 auth_credentials_file: str = 'credentials.yaml',
+                 auth_cookie_name: str = 'bmld_inf2_streamlit_app'):
+        """
+        Initializes filesystem and authentication components if not already initialized.
+
+        Sets up filesystem access using the specified protocol and configures authentication
+        with cookie-based session management.
+
+        Args:
+            fs_protocol: Filesystem protocol to use ('webdav' or 'file')
+            fs_root_folder: Base directory for all file operations
+            auth_credentials_file: YAML file path for storing user credentials
+            auth_cookie_name: Name for the authentication cookie
+        """
+        if hasattr(self, 'fs'):  # check if instance is already initialized
             return
-        elif len(app_manager_config) > 0:
-            self._init_app_manager_data(**app_manager_config)
-        else:
-            raise ValueError("AppManager: No configuration provided and no configuration found in session state")
+
+        for var in [fs_protocol, fs_root_folder]:
+            if var is None:
+                raise ValueError(f"AppManager: {var} is not set")
+            
+        # initialize filesystem stuff
+        self.fs_root_folder = fs_root_folder
+        self.fs = self._init_filesystem(fs_protocol)
+
+        # initialize streamlit authentication stuff
+        self.auth_credentials_file = auth_credentials_file
+        self.auth_cookie_name = auth_cookie_name
+        self.auth_cookie_key = secrets.token_urlsafe(32)
+        self.auth_credentials = self._load_auth_credentials()
+        self.authenticator = stauth.Authenticate(self.auth_credentials, self.auth_cookie_name, self.auth_cookie_key)
+
 
     @staticmethod
-    def _get_secret(*keys, default_value = None):
-        """Retrieve a secret value from Streamlit's secrets management.
+    def _init_filesystem(protocol: str):
+        """
+        Creates and configures an fsspec filesystem instance.
+
+        Supports WebDAV protocol using credentials from Streamlit secrets, and local filesystem access.
         
         Args:
-            *keys: Variable length sequence of keys to access nested secrets.
-            default_value: Optional default value if key is not found.
-        
+            protocol: The filesystem protocol to initialize ('webdav' or 'file')
+            
         Returns:
-            The secret value at the specified key path.
+            fsspec.AbstractFileSystem: Configured filesystem instance
             
         Raises:
-            ValueError: If key not found and no default_value provided.
+            ValueError: If an unsupported protocol is specified
         """
-        recursive_secrets = st.secrets
-        for key in keys:
-            if key not in recursive_secrets and default_value is None:
-                raise ValueError(f"AppManager: No {key} found in streamlit secrets")
-            elif key not in recursive_secrets and default_value is not None:
-                return default_value
-            else:
-                recursive_secrets = recursive_secrets[key]
-        return recursive_secrets
-
-    def _init_app_manager_data(self, 
-                               storage_type: str, 
-                               login_py_file = None,
-                               credentials_file_name = 'credentials.csv',
-                               cookie_name = 'bmld_inf2_streamlit_app'):
-        """Initialize the application manager data with specified storage type.
-        
-        Args:
-            storage_type (str): Type of storage to use (e.g. 'switchdrive')
-            login_py_file (str, optional): Path to the login page Python file. Required for authentication.
-            credentials_file_name (str, optional): Name of the credentials file. Defaults to 'credentials.csv'.
-            cookie_name (str, optional): Name of the authentication cookie. Defaults to 'bmld_inf2_streamlit_app'.
-            
-        Raises:
-            ValueError: If storage_type is not supported.
-        """
-        app_manager_data = {
-            'storage_type': storage_type,
-            'login_py_file': login_py_file,
-        }
-
-        if storage_type == 'switchdrive':
-            app_drive = SwitchDrive(
-                username = self._get_secret('switchdrive', 'username'),
-                passcode = self._get_secret('switchdrive', 'passcode'),
-                root_path = self._get_secret('switchdrive', 'root_path', default_value = '')
-            )
+        if protocol == 'webdav':
+            secrets = st.secrets['webdav']
+            return fsspec.filesystem('webdav', 
+                                     base_url=secrets['base_url'], 
+                                     auth=(secrets['username'], secrets['password']))
+        elif protocol == 'file':
+            return fsspec.filesystem('file')
         else:
-            raise ValueError(f"AppManager: Invalid storage type: {storage_type}")
+            raise ValueError(f"AppManager: Invalid filesystem protocol: {protocol}")
 
-        credentials_file = CloudFile(credentials_file_name, app_drive)
-        login_manager = LoginManager(credentials_file, cookie_name, secrets.token_urlsafe(32))
+    def _get_data_handler(self, subfolder: str = None):
+        """
+        Creates a DataHandler instance for the specified subfolder.
 
-        app_manager_data['app_drive'] = app_drive
-        app_manager_data['login_manager'] = login_manager
-        
-        st.session_state['app_manager'] = app_manager_data
+        Args:
+            subfolder: Optional subfolder path relative to root folder
 
-    @staticmethod
-    def _get_app_manager_data():
-        """Get the application manager data from session state.
-        
         Returns:
-            dict: The app manager data dictionary, or None if not initialized.
+            DataHandler: Configured for operations in the specified folder
         """
-        return st.session_state.get('app_manager', None)
-
-    @staticmethod
-    def _save_app_manager_data(self):
-        """Save the current app manager data to session state."""
-        st.session_state['app_manager'] = self.app_manager_data
-
-    def check_login(self):
-        """Check login status and handle authentication flow.
-        
-        Creates a logout button that logs the user out and redirects to the login page.
-        If the user is not logged in, redirects to the login page specified during initialization.
-
-        Raises:
-            ValueError: If no login page was specified during initialization.
-        """
-        app_manager_data = self._get_app_manager_data()
-        login_py_file = app_manager_data.get('login_py_file', None)
-        if login_py_file is None:
-            raise ValueError("AppManager: No login page specified, please use parameter 'login_py_file' when initializing AppManager")
-
-        if st.session_state.get("authentication_status") is not True:
-            st.switch_page(login_py_file)
+        if subfolder is None:
+            return DataHandler(self.fs, self.fs_root_folder)
         else:
-            app_manager_data = self._get_app_manager_data()
-            login_manager = app_manager_data['login_manager']
-            login_manager.logout() # create logout button
+            return DataHandler(self.fs, posixpath.join(self.fs_root_folder, subfolder))
 
-    def get_current_user(self):
-        """Get the currently logged in username.
-        
-        Returns:
-            str: The current username, or None if no user is logged in.
+    def _load_auth_credentials(self):
         """
-        return st.session_state.get('username', None)
+        Loads user credentials from the configured credentials file.
 
-    def get_user_data_file(self, file_name):
-        """Get a CloudFile instance for user-specific data storage.
+        Returns:
+            dict: User credentials, defaulting to empty usernames dict if file not found
+        """
+        dh = self._get_data_handler()
+        return dh.load(self.auth_credentials_file, initial_value= {"usernames": {}})
+
+    def _save_auth_credentials(self):
+        """
+        Saves current user credentials to the credentials file.
+        """
+        dh = self._get_data_handler()
+        dh.save(self.auth_credentials_file, self.auth_credentials)
+
+    def login_page(self, show_register_tab = False):
+        """
+        Renders the authentication interface.
+        
+        Displays login form and optional registration form. Handles user authentication
+        and registration flows. Stops further execution after rendering.
         
         Args:
-            file_name (str): Name of the file to access
-            
-        Returns:
-            CloudFile: A CloudFile instance for the specified user data file
-            
-        Raises:
-            ValueError: If no user is currently logged in
+            show_register_tab: If True, shows registration option alongside login
         """
-        user = st.session_state.get('username', None)
-        if user is None:
-            raise ValueError("AppManager: No user logged in")
+        if st.session_state.get("authentication_status") is True:
+            self.authenticator.logout()
+            return
+
+        if show_register_tab:
+            login_tab, register_tab = st.tabs(["Login", "Register new User"])
+            with login_tab:
+                self._show_login()
+            with register_tab:
+                self._show_register()
         else:
-            app_manager_data = self._get_app_manager_data()
-            app_drive = app_manager_data['app_drive']
-            user_data_folder = 'user_data_' + user
-            drive = app_drive.get_subfolder_drive(user_data_folder)
-            return CloudFile(file_name, drive)
+            self._show_login()            
+        st.stop()
 
-    def get_app_data_file(file_name): 
-        """Get a CloudFile instance for application-wide data storage.
+    def _show_login(self):
+        """
+        Renders the login form and handles authentication status messages.
+        """
+        self.authenticator.login()
+        if st.session_state["authentication_status"] is False:
+            st.error("Username/password is incorrect")
+        else:
+            st.warning("Please enter your username and password")
+
+    def _show_register(self):
+        """
+        Renders the registration form and handles user registration flow.
         
-        Args:
-            file_name (str): Name of the file to access
-            
+        Displays password requirements, processes registration attempts,
+        and saves credentials on successful registration.
+        """
+        st.info("""
+        The password must be 8-20 characters long and include at least one uppercase letter, 
+        one lowercase letter, one digit, and one special character from @$!%*?&.
+        """)
+        res = self.authenticator.register_user()
+        if res[1] is not None:
+            st.success(f"User {res[1]} registered successfully")
+            try:
+                self._save_auth_credentials()
+                st.success("Credentials saved successfully")
+            except Exception as e:
+                st.error(f"Failed to save credentials: {e}")
+
+    def get_user_data_handler(self):
+        """
+        Creates a DataHandler for the current user's private data directory.
+        
+        The directory name is derived from the authenticated username.
+        
         Returns:
-            CloudFile: A CloudFile instance for the specified app data file
+            DataHandler: Configured for user-specific data operations
             
         Raises:
-            RuntimeError: If app manager is not properly initialized
+            ValueError: If no user is currently authenticated
         """
-        app_manager_data = self._get_app_manager_data()
-        app_drive = app_manager_data['app_drive']
-        app_data_folder = 'app_data'
-        drive = app_drive.get_subfolder_drive(app_data_folder)
-        return CloudFile(file_name, drive)
+        username = st.session_state.get('username', None)
+        if username is None:
+            raise ValueError("AppManager: No user logged in, cannot get user data handler")
 
-    def login_page(self, show_register_tab = True):
-        """Display the login page and handle user authentication.
-        
-        Args:
-            show_register_tab (bool): Whether to show the registration tab.
-                Defaults to True.
-                
-        Raises:
-            RuntimeError: If login manager is not properly initialized
+        user_data_folder = 'user_data_' + username
+        return self._get_data_handler(user_data_folder)
+
+    def get_app_data_handler(self):
         """
-        app_manager_data = self._get_app_manager_data()
-        login_manager = app_manager_data['login_manager']
-        login_manager.login_page(show_register_tab)
+        Creates a DataHandler for application-wide shared data.
+        
+        Returns:
+            DataHandler: Configured for application-wide data operations
+        """
+        return self._get_data_handler('app_data')
 
