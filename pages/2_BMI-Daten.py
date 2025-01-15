@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 from utils.app_manager import AppManager
-from functions.bmi_data_manager import load_bmi_df
 
 app_manager = AppManager()
 app_manager.login_page()

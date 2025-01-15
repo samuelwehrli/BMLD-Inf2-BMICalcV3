@@ -1,22 +1,6 @@
 import pandas as pd
 from utils.app_manager import AppManager
 
-def load_bmi_df(bmi_file):
-    """
-    Load BMI data from file or create empty DataFrame if file doesn't exist.
-
-    Args:
-        bmi_file (CloudFile): CloudFile instance for BMI data storage.
-
-    Returns:
-        pd.DataFrame: DataFrame containing BMI records or empty DataFrame if file doesn't exist.
-    """
-    if bmi_file.exists():
-        bmi_df = bmi_file.load()
-    else:
-        bmi_df = pd.DataFrame()  # create empty dataframe if file does not exist
-    return bmi_df
-
 def update_bmi_data(bmi_result, bmi_file = 'bmi.csv'):
     """
     Update BMI data file with new result.
