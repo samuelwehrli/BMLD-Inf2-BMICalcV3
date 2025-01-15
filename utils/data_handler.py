@@ -91,14 +91,14 @@ class DataHandler:
         with self.filesystem.open(full_path, "wb") as f:
             f.write(content)
 
-    def load(self, relative_path, initial_value=None):
+    def load(self, relative_path, initial_value=None, **load_args):
         """
         Load data from a file based on its extension.
 
         Args:
             relative_path: The path relative to the root directory.
             initial_value: The value to return if the file does not exist. If None, raises FileNotFoundError.
-
+            **load_args: Additional arguments to pass to the file loader (pd.read_csv).
         Returns:
             Parsed data (e.g., DataFrame, dict, str, bytes) depending on the file type, or the initial value if provided.
         """
@@ -113,7 +113,7 @@ class DataHandler:
         elif ext in [".yaml", ".yml"]:
             return yaml.safe_load(self.read_text(relative_path))
         elif ext == ".csv":
-            return pd.read_csv(StringIO(self.read_text(relative_path)))
+            return pd.read_csv(StringIO(self.read_text(relative_path)), **load_args)       
         elif ext == ".txt":
             return self.read_text(relative_path)
         else:

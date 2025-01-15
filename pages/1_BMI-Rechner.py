@@ -6,7 +6,6 @@ from functions.bmi_data_manager import update_bmi_data
 
 app_manager = AppManager()
 app_manager.login_page()
-data_handler = app_manager.get_user_data_handler
 
 st.title('BMI Rechner')
 
@@ -20,7 +19,7 @@ if st.button('BMI berechnen'):
     result = calculate_bmi(height, weight)
     
     st.write(f'Ihr BMI ist: {result["bmi"]}')
-    st.write(f'Berechnet am: {result["timestamp"]}')
+    st.write(f'Berechnet am: {result["timestamp"].strftime("%d.%m.%Y %H:%M:%S")}')
     st.write(f'Kategorie: {result["category"]}')
         
     # Save BMI data

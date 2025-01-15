@@ -1,5 +1,4 @@
-from datetime import datetime
-from zoneinfo import ZoneInfo
+import pandas as pd
 
 def calculate_bmi(height, weight, timezone='Europe/Zurich'):
     """
@@ -17,8 +16,6 @@ def calculate_bmi(height, weight, timezone='Europe/Zurich'):
 
     bmi = weight / (height ** 2)
     
-    timestamp = datetime.now(tz=ZoneInfo(timezone)).strftime("%d.%m.%Y %H:%M:%S")
-
     if bmi < 18.5:
         category = 'Untergewicht'
     elif bmi < 25:
@@ -29,7 +26,7 @@ def calculate_bmi(height, weight, timezone='Europe/Zurich'):
         category = 'Adipositas'
 
     return {
-        "timestamp": timestamp, 
+        "timestamp": pd.Timestamp.now(tz=timezone).round('S'),
         "height": height,
         "weight": weight,
         "bmi": round(bmi, 1),
