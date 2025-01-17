@@ -155,10 +155,17 @@ class DataManager:
             - If no user is logged in, all user data is cleared from session state
         """
         username = st.session_state.get('username', None)
-        if (username is None) or (session_state_key in st.session_state):
+        if username is None:
+            for key in self.user_data_reg:  # delete all user data
+                st.session_state.pop(key)
+            self.user_data_reg = {}
+            return
+            # raise ValueError(f"DataManager: No user logged in, cannot load user data {file_name}")
+        elif session_state_key in st.session_state:
             return
 
         user_data_folder = 'user_data_' + username
+
         dh = self._get_data_handler(user_data_folder)
         data = dh.load(file_name, initial_value, **load_args)
         st.session_state[session_state_key] = data

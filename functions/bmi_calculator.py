@@ -1,4 +1,4 @@
-import pandas as pd
+from utils import helpers
 
 def calculate_bmi(height, weight, timezone='Europe/Zurich'):
     """
@@ -26,7 +26,7 @@ def calculate_bmi(height, weight, timezone='Europe/Zurich'):
         category = 'Adipositas'
 
     return {
-        "timestamp": pd.Timestamp.now(tz=timezone).round('S'),
+        "timestamp": helpers.ch_now(),
         "height": height,
         "weight": weight,
         "bmi": round(bmi, 1),

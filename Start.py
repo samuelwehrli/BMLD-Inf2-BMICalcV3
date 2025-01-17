@@ -7,7 +7,7 @@ from utils.login_manager import LoginManager
 # initialize data manager and load persistent data
 # data_manager = DataManager()  # for local use
 data_manager = DataManager(fs_protocol='webdav', fs_root_folder="App/BMLD-Inf2-BMICalcV3")  # switch drive 
-data_manager.load_user_data('bmi_df','bmi.csv', pd.DataFrame(), parse_dates = ['timestamp'])
+data_manager.load_user_data('bmi_df','bmi.csv', initial_value = pd.DataFrame(), parse_dates = ['timestamp'])
 
 # initialize login manager
 login_manager = LoginManager(data_manager)

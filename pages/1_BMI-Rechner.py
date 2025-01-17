@@ -4,7 +4,7 @@ from utils.login_manager import LoginManager
 from functions.bmi_calculator import calculate_bmi
 from functions.bmi_data_manager import update_bmi_data
 
-LoginManager().login()  # login page
+LoginManager().go_to_login('Start.py')  # redirect to login page if no user is logged in
 
 st.title('BMI Rechner')
 
