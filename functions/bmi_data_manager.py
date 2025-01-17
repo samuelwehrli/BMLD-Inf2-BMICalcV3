@@ -1,46 +1,32 @@
 import pandas as pd
-from utils.app_manager import AppManager
+import streamlit as st
+from utils.data_manager import DataManager
 
 BMI_FILE = 'bmi.csv'
 
-def load_bmi_data():
-    """
-    Retrieves the BMI measurement data for the current user.
-
-    Returns:
-        pandas.DataFrame: DataFrame containing BMI measurements.
-        Returns empty DataFrame if no data exists.
-    """
-    data_handler = AppManager().get_user_data_handler()
-    bmi_df = data_handler.load(BMI_FILE, initial_value=pd.DataFrame(), parse_dates=['timestamp'])
-    return bmi_df
-
-def save_bmi_data(bmi_df):
-    """
-    Saves the BMI measurement data for the current user.
-    """
-    data_handler = AppManager().get_user_data_handler()
-    data_handler.save(BMI_FILE, bmi_df)
-
 def update_bmi_data(bmi_result):
     """
-    Updates the BMI data storage with a new BMI measurement result.
+    Update the BMI data in session state and storage with a new BMI measurement result.
+
+    This function requires that 'bmi_df' exists in Streamlit's session state before calling.
+    It appends the new measurement to the existing DataFrame and saves it to storage.
 
     Args:
-        bmi_result (dict): Dictionary containing the BMI measurement data with:
-            - timestamp (str): Measurement date and time
-            - height (float): Person's height in meters
-            - weight (float): Person's weight in kilograms
-            - bmi (float): Calculated BMI value
-            - category (str): BMI category (e.g. 'Normal', 'Overweight')
-
-    Returns:
-        bool: True if data was saved successfully, False otherwise
+        bmi_result (dict): A dictionary containing the BMI measurement data with keys:
+            - timestamp (str): The date and time of the measurement
+            - height (float): The person's height in meters
+            - weight (float): The person's weight in kilograms
+            - bmi (float): The calculated BMI value
+            - category (str): The BMI category (e.g., 'Normal', 'Overweight')
     """
-    bmi_df = load_bmi_data()
+    bmi_df = st.session_state['bmi_df']
 
     # Append new result to dataframe 
     bmi_df = pd.concat([bmi_df, pd.DataFrame([bmi_result])], ignore_index=True)
+
+    # write back to session state
+    st.session_state['bmi_df'] = bmi_df
+
+    # backup data in data persistent data storage
+    DataManager().save_data('bmi_df')
     
-    # Save updated dataframe
-    save_bmi_data(bmi_df)

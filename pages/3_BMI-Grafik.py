@@ -1,14 +1,11 @@
 import streamlit as st
-import pandas as pd
-from utils.app_manager import AppManager
-from functions.bmi_data_manager import load_bmi_data
+from utils.login_manager import LoginManager
 
-app_manager = AppManager()
-app_manager.login_page()
+LoginManager().login()  # login page
 
 st.title('BMI Verlauf')
 
-bmi_df = load_bmi_data()
+bmi_df = st.session_state['bmi_df']
 if bmi_df.empty:
     st.info('Keine BMI Daten vorhanden. Berechnen Sie Ihren BMI auf der Startseite.')
     st.stop()

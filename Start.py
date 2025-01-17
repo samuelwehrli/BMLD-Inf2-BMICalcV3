@@ -1,14 +1,23 @@
 import streamlit as st
-from utils.app_manager import AppManager
+import pandas as pd
 
-app_manager = AppManager(fs_protocol='webdav', fs_root_folder="App/BMLD-Inf2-BMICalcV3")
-app_manager.login_page(show_register_tab=True)
+from utils.data_manager import DataManager
+from utils.login_manager import LoginManager
+
+# initialize data manager and load persistent data
+# data_manager = DataManager()  # for local use
+data_manager = DataManager(fs_protocol='webdav', fs_root_folder="App/BMLD-Inf2-BMICalcV3")  # switch drive 
+data_manager.load_user_data('bmi_df','bmi.csv', pd.DataFrame(), parse_dates = ['timestamp'])
+
+# initialize login manager
+login_manager = LoginManager(data_manager)
+login_manager.login_register()
 
 st.title('BMI Rechner')
 
 name = st.session_state.get('name')
-st.write(f"Hallo {name}!")
-st.write("Die Anwendung ermöglicht es Ihnen, Ihren BMI zu berechnen und im Zeitverlauf zu verfolgen.")
+st.markdown(f"✨ Hallo {name}! ✨")
+st.markdown("🏃 Die Anwendung ermöglicht es Ihnen, Ihren BMI zu berechnen und im Zeitverlauf zu verfolgen 📊")
         
 # Add some health advice
 st.info("""Der BMI ist ein Screening-Tool, aber keine Diagnose für Körperfett oder Gesundheit. 

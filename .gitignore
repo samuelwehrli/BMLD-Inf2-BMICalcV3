@@ -1,6 +1,7 @@
 # Added WEHS
 local/
-.streamlit/
+.streamlit/secrets.toml
+app_data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -1,11 +1,10 @@
 import streamlit as st
-import pandas as pd
-from utils.app_manager import AppManager
+
+from utils.login_manager import LoginManager
 from functions.bmi_calculator import calculate_bmi
 from functions.bmi_data_manager import update_bmi_data
 
-app_manager = AppManager()
-app_manager.login_page()
+LoginManager().login()  # login page
 
 st.title('BMI Rechner')
 
@@ -26,5 +25,6 @@ if submitted:
     st.write(f'Kategorie: {result["category"]}')
         
     # Save BMI data
-    update_bmi_data(result)
+    update_bmi_data(result)  # update data in session state
+
         

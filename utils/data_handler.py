@@ -14,6 +14,9 @@ class DataHandler:
         self.filesystem = filesystem
         self.root_path = root_path
 
+    def join(self, *args):
+        return posixpath.join(*args)
+
     def _resolve_path(self, relative_path):
         """
         Resolve the full path using the filesystem's path joining capabilities.
@@ -24,7 +27,7 @@ class DataHandler:
         Returns:
             The resolved absolute path.
         """
-        return posixpath.join(self.root_path, relative_path)
+        return self.join(self.root_path, relative_path)
 
     def exists(self, relative_path):
         """
