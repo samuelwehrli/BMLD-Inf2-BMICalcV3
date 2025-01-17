@@ -43,8 +43,8 @@ class LoginManager:
         if hasattr(self, 'authenticator'):  # check if instance is already initialized
             return
         
-        if DataManager is None:
-            raise ValueError("DataManager instance required for LoginManager initialization")
+        if data_manager is None:
+            return
 
         # initialize streamlit authentication stuff
         self.data_manager = data_manager
