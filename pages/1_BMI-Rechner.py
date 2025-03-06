@@ -2,7 +2,7 @@ import streamlit as st
 
 from utils.login_manager import LoginManager
 from functions.bmi_calculator import calculate_bmi
-from functions.bmi_data_manager import update_bmi_data
+from utils.data_manager import DataManager
 
 LoginManager().go_to_login('Start.py')  # redirect to login page if no user is logged in
 
@@ -17,14 +17,15 @@ with st.form("BMI Eingabeformular"):
     submitted = st.form_submit_button("Submit")
     
 if submitted:
-    
     result = calculate_bmi(height, weight)
-    
     st.write(f'Ihr BMI ist: {result["bmi"]}')
     st.write(f'Berechnet am: {result["timestamp"].strftime("%d.%m.%Y %H:%M:%S")}')
     st.write(f'Kategorie: {result["category"]}')
         
     # Save BMI data
-    update_bmi_data(result)  # update data in session state
+    DataManager().append_record(session_state_key='bmi_df', record_dict=result)  # update data in session state and storage
+
+
+        
 
         
