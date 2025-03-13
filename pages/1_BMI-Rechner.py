@@ -1,10 +1,10 @@
 import streamlit as st
-
-from utils.login_manager import LoginManager
 from functions.bmi_calculator import calculate_bmi
 from utils.data_manager import DataManager
 
-LoginManager().go_to_login('Start.py')  # redirect to login page if no user is logged in
+# redirect to login page if no user is logged in
+from utils.login_manager import LoginManager
+LoginManager().go_to_login('Start.py')  
 
 st.title('BMI Rechner')
 
@@ -23,7 +23,7 @@ if submitted:
     st.write(f'Kategorie: {result["category"]}')
         
     # Save BMI data
-    DataManager().append_record(session_state_key='bmi_df', record_dict=result)  # update data in session state and storage
+    DataManager().append_record(session_state_key='data_df', record_dict=result)  # update data in session state and storage
 
 
         

@@ -1,17 +1,26 @@
-import streamlit as st
+# === Initialize the data manager ===
 import pandas as pd
-
 from utils.data_manager import DataManager
+
+# initialize the data manager
+data_manager = DataManager(fs_protocol='webdav', fs_root_folder="BMLD_App_DB")  # switch drive 
+
+# load the data from the persistent storage into the session state
+data_manager.load_user_data(
+    session_state_key='data_df', 
+    file_name='data.csv', 
+    initial_value = pd.DataFrame(), 
+    parse_dates = ['timestamp']
+    )
+
+# === Initialize the login manager ===
 from utils.login_manager import LoginManager
 
-# initialize data manager and load persistent data
-# data_manager = DataManager()  # for local use
-data_manager = DataManager(fs_protocol='webdav', fs_root_folder="App/BMLD-Inf2-BMICalcV3")  # switch drive 
-data_manager.load_user_data('bmi_df','bmi.csv', initial_value = pd.DataFrame(), parse_dates = ['timestamp'])
+login_manager = LoginManager(data_manager) # initialize login manager
+login_manager.login_register()  # opens login page
 
-# initialize login manager
-login_manager = LoginManager(data_manager)
-login_manager.login_register()
+# === Start with actual app ===
+import streamlit as st
 
 st.title('BMI Rechner')
 
