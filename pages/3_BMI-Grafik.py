@@ -1,8 +1,9 @@
-import streamlit as st
-
-# redirect to login page if no user is logged in
+# === Login manager ===
 from utils.login_manager import LoginManager
 LoginManager().go_to_login('Start.py')  
+
+# === BMI Grafik ===
+import streamlit as st
 
 st.title('BMI Verlauf')
 

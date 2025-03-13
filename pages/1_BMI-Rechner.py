@@ -1,10 +1,11 @@
+# === Login manager ===
+from utils.login_manager import LoginManager
+LoginManager().go_to_login('Start.py')  
+
+# === Input BMI Calculator ===
 import streamlit as st
 from functions.bmi_calculator import calculate_bmi
 from utils.data_manager import DataManager
-
-# redirect to login page if no user is logged in
-from utils.login_manager import LoginManager
-LoginManager().go_to_login('Start.py')  
 
 st.title('BMI Rechner')
 
