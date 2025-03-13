@@ -25,10 +25,12 @@ def calculate_bmi(height, weight, timezone='Europe/Zurich'):
     else:
         category = 'Adipositas'
 
-    return {
+    result_dict = {
         "timestamp": helpers.ch_now(),
         "height": height,
         "weight": weight,
         "bmi": round(bmi, 1),
         "category": category,
     } 
+
+    return result_dict

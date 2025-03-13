@@ -1,11 +1,12 @@
-# === Login manager ===
+# ====== Start Login Block ======
 from utils.login_manager import LoginManager
-LoginManager().go_to_login('Start.py')  
+LoginManager().go_to_login('Start.py') 
+# ====== End Login Block ======
 
-# === Input BMI Calculator ===
+# ------------------------------------------------------------
+# Here starts the actual app, which was developed previously
 import streamlit as st
 from functions.bmi_calculator import calculate_bmi
-from utils.data_manager import DataManager
 
 st.title('BMI Rechner')
 
@@ -23,7 +24,8 @@ if submitted:
     st.write(f'Berechnet am: {result["timestamp"].strftime("%d.%m.%Y %H:%M:%S")}')
     st.write(f'Kategorie: {result["category"]}')
         
-    # Save BMI data
+    # --- Save BMI data ---
+    from utils.data_manager import DataManager
     DataManager().append_record(session_state_key='data_df', record_dict=result)  # update data in session state and storage
 
 
