@@ -160,8 +160,8 @@ class DataManager:
             for key in self.user_data_reg:  # delete all user data
                 st.session_state.pop(key)
             self.user_data_reg = {}
+            st.error(f"DataManager: No user logged in, cannot load file `{file_name}` into session state with key `{session_state_key}`")
             return
-            # raise ValueError(f"DataManager: No user logged in, cannot load user data {file_name}")
         elif session_state_key in st.session_state:
             return
 
