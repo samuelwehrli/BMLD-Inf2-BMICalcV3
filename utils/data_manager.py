@@ -59,6 +59,7 @@ class DataManager:
             fs: Filesystem interface instance
             app_data_reg (dict): Registry for application-wide data
             user_data_reg (dict): Registry for user-specific data
+            username (str): Current user's username (None if no user is logged in)
         """
         if hasattr(self, 'fs'):  # check if instance is already initialized
             return
