@@ -3,6 +3,7 @@
 !.gitignore
 !.streamlit
 
+.streamlit/secrets.toml
 
 # Python
 __pycache__/
@@ -11,6 +12,4 @@ __pycache__/
 *.egg
 *.egg-info/
 
-# if you want to use another secret file locally
-.streamlit/config.toml
-local_secrets.toml
+
