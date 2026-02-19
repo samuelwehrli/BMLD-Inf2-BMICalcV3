@@ -1,15 +1,13 @@
-from utils import helpers
-
-def calculate_bmi(height, weight, timezone='Europe/Zurich'):
+def calculate_bmi(height, weight):
     """
-    Calculate BMI and return a dictionary with inputs, BMI, category, and timestamp.
+    Calculate BMI and return a dictionary with the inputs, BMI value, and category.
 
     Args:
         height (float): Height in meters.
         weight (float): Weight in kilograms.
 
     Returns:
-        dict: A dictionary containing the inputs, calculated BMI, category, and timestamp.
+        dict: A dictionary containing height, weight, bmi, and category.
     """
     if height <= 0 or weight <= 0:
         raise ValueError("Height and weight must be positive values.")
@@ -26,11 +24,10 @@ def calculate_bmi(height, weight, timezone='Europe/Zurich'):
         category = 'Adipositas'
 
     result_dict = {
-        "timestamp": helpers.ch_now(),
         "height": height,
         "weight": weight,
         "bmi": round(bmi, 1),
         "category": category,
-    } 
+    }
 
     return result_dict

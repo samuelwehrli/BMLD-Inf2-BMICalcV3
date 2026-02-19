@@ -14,7 +14,7 @@ class DataHandler:
         self.filesystem = filesystem
         self.root_path = root_path
 
-    def join(self, *args):
+    def _join(self, *args):
         return posixpath.join(*args)
 
     def _resolve_path(self, relative_path):
@@ -27,7 +27,7 @@ class DataHandler:
         Returns:
             The resolved absolute path.
         """
-        return self.join(self.root_path, relative_path)
+        return self._join(self.root_path, relative_path)
 
     def exists(self, relative_path):
         """
@@ -53,7 +53,7 @@ class DataHandler:
             The content of the file as a string.
         """
         full_path = self._resolve_path(relative_path)
-        with self.filesystem.open(full_path, "r") as f:
+        with self.filesystem.open(full_path, "r", encoding='utf-8') as f:
             return f.read()
 
     def read_binary(self, relative_path):
@@ -79,7 +79,7 @@ class DataHandler:
             content: The text content to write.
         """
         full_path = self._resolve_path(relative_path)
-        with self.filesystem.open(full_path, "w") as f:
+        with self.filesystem.open(full_path, "w", encoding='utf-8') as f:
             f.write(content)
 
     def write_binary(self, relative_path, content):
